@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -30,7 +29,7 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
-@Mojo(name = "decrypt", defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = false)
+@Mojo(name = "decrypt", defaultPhase = LifecyclePhase.INITIALIZE)
 public final class DecryptMojo extends AbstractMojo {
 
 	/** The prefix to use when setting values using -D.... */
@@ -126,30 +125,28 @@ public final class DecryptMojo extends AbstractMojo {
 			this.var = var;
 		}
 
-		private void exportVariable(Logger log, Server server) throws MojoExecutionException {
+		private void exportVariable(Logger log, Server server, String value) throws MojoExecutionException {
 			final String target = this.var.get();
 
 			// Do nothing if no value set
-			if (StringUtils.isBlank(target)) {
+			if ((target == null) || (target.length() < 1)) {
 				log.debug("No variable name given to store the %s value for server [%s]", this.fieldName,
 					server.getId());
 				return;
 			}
 
 			// Create the variable
-			log.debug("Storing the %s for server [%s] in the variable [%s]", this.fieldName, DecryptMojo.this.serverId,
-				target);
+			log.info("Storing the %s for server [%s] in the variable [%s]", this.fieldName, server.getId(), target);
 
 			// Not entirely sure this is necessary, but we do it anyway :D
-			DecryptMojo.this.session.getTopLevelProject().getProperties().setProperty(target,
-				this.getter.apply(server));
+			DecryptMojo.this.session.getTopLevelProject().getProperties().setProperty(target, value);
 			for (MavenProject project : DecryptMojo.this.session.getProjectDependencyGraph().getSortedProjects()) {
 				getLog().debug("Storing timestamp property in project " + project.getId());
-				project.getProperties().setProperty(target, this.getter.apply(server));
+				project.getProperties().setProperty(target, value);
 			}
 		}
 
-		private void exportFile(Logger log, Server server) throws MojoExecutionException {
+		private void exportFile(Logger log, Server server, String value) throws MojoExecutionException {
 			final File target = this.file.get();
 
 			// Do nothing if no value set
@@ -165,17 +162,24 @@ public final class DecryptMojo extends AbstractMojo {
 			}
 
 			// Write the file
-			log.debug("Writing out the %s for server [%s] to the file [%s]", this.fieldName, server.getId(), target);
+			log.info("Writing out the %s for server [%s] to the file [%s]", this.fieldName, server.getId(), target);
 			try (Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target)))) {
-				w.write(this.getter.apply(server));
+				w.write(value);
 			} catch (IOException e) {
 				throw new MojoExecutionException(e.getMessage(), e);
 			}
 		}
 
 		public void export(Logger log, Server server) throws MojoExecutionException {
-			exportVariable(log, server);
-			exportFile(log, server);
+
+			final String value = this.getter.apply(server);
+			if (value == null) {
+				log.debug("No %s value for server [%s]", this.fieldName, server.getId());
+				return;
+			}
+
+			exportVariable(log, server, value);
+			exportFile(log, server, value);
 		}
 	}
 
@@ -196,29 +200,29 @@ public final class DecryptMojo extends AbstractMojo {
 				));
 				add(new ValueHandler( //
 					"password", //
-					Server::getUsername, //
+					Server::getPassword, //
 					() -> DecryptMojo.this.passwordFile, //
 					() -> DecryptMojo.this.passwordVar //
 				));
 				add(new ValueHandler( //
 					"private key passphrase", //
-					Server::getUsername, //
+					Server::getPassphrase, //
 					() -> DecryptMojo.this.passphraseFile, //
 					() -> DecryptMojo.this.passphraseVar //
 				));
 				add(new ValueHandler( //
 					"private key", //
-					Server::getUsername, //
+					Server::getPrivateKey, //
 					() -> DecryptMojo.this.privateKeyFile, //
 					() -> DecryptMojo.this.privateKeyVar //
 				));
 			}
 		});
 
-	@Parameter(property = DecryptMojo.PROP_PFX + "skip", defaultValue = "false")
+	@Parameter(property = DecryptMojo.PROP_PFX + "skip", required = false, defaultValue = "false")
 	private boolean skip;
 
-	@Parameter(property = DecryptMojo.PROP_PFX + "serverId", required = true)
+	@Parameter(property = DecryptMojo.PROP_PFX + "serverId", required = false)
 	private String serverId;
 
 	@Parameter(property = DecryptMojo.PROP_PFX + "usernameFile", required = false)
@@ -245,7 +249,7 @@ public final class DecryptMojo extends AbstractMojo {
 	@Parameter(property = DecryptMojo.PROP_PFX + "privateKeyVar", required = false)
 	private String privateKeyVar;
 
-	@Component
+	@Parameter(defaultValue = "${settings}", readonly = true)
 	private Settings settings;
 
 	@Component
@@ -260,6 +264,11 @@ public final class DecryptMojo extends AbstractMojo {
 
 		if (this.skip) {
 			log.info("Skipping execution.");
+			return;
+		}
+
+		if (this.serverId == null) {
+			log.info("No server ID given, nothing to decrypt");
 			return;
 		}
 

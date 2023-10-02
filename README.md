@@ -13,55 +13,43 @@ Usage
 Add this to your `pom.xml` in the `<build><plugins>` section:
 
 ```xml
- <plugin>
-    <groupId>com.armedia.maven</groupId>
-    <artifactId>repocreds-maven-plugin</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <configuration>
-        <!-- all these values can be set using -Dmaven.repocreds.<valueName> -->
+<plugin>
+	<groupId>com.armedia.maven</groupId>
+	<artifactId>repocreds-maven-plugin</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+			<configuration>
+				<!-- all these values can be set using -Dmaven.repocreds.<valueName> -->
 
-        <!-- The ID of the server whose credentials you wish to decrypt -->
-        <serverId>some-server-ID</serverId>
+				<!-- The ID of the server whose credentials you wish to decrypt -->
+				<serverId>some-server-id</serverId>
 
-        <!-- Whether to skip execution or not -->
-        <skip>true</skip>
+				<!-- Whether to skip execution or not -->
+				<skip>false</skip>
 
-        <!-- The file into which to store the username -->
-        <usernameFile>...</usernameFile>
+				<!-- The file into which to store the username -->
+				<usernameFile>username.txt</usernameFile>
 
-        <!-- The file into which to store the password -->
-        <passwordFile>...</passwordFile>
+				<!-- The file into which to store the password -->
+				<passwordFile>password.txt</passwordFile>
 
-        <!-- The file into which to store the private key -->
-        <privateKeyFile>...</privateKeyFile>
+				<!-- The file into which to store the private key -->
+				<privateKeyFile>privateKey.txt</privateKeyFile>
 
-        <!-- The file into which to store the private key's passphrase -->
-        <passphraseFile>...</passphraseFile>
+				<!-- The file into which to store the private key's passphrase -->
+				<passphraseFile>passphrase.txt</passphraseFile>
 
-        <!-- The file into which to store the username -->
-        <usernameFile>...</usernameFile>
+				<!-- The property into which to store the username -->
+				<usernameVar>var.username</usernameVar>
 
-        <!-- The file into which to store the password -->
-        <passwordFile>...</passwordFile>
+				<!-- The property into which to store the password -->
+				<passwordVar>var.password</passwordVar>
 
-        <!-- The file into which to store the private key -->
-        <privateKeyFile>...</privateKeyFile>
+				<!-- The property into which to store the private key -->
+				<privateKeyVar>var.privateKey</privateKeyVar>
 
-        <!-- The file into which to store the private key's passphrase -->
-        <passphraseFile>...</passphraseFile>
-
-        <!-- The property into which to store the username -->
-        <usernameVar>...</usernameVar>
-
-        <!-- The property into which to store the password -->
-        <passwordVar>...</passwordVar>
-
-        <!-- The property into which to store the private key -->
-        <privateKeyVar>...</privateKeyVar>
-
-        <!-- The property into which to store the private key's passphrase -->
-        <passphraseVar>...</passphraseVar>
-    </configuration>
+				<!-- The property into which to store the private key's passphrase -->
+				<passphraseVar>var.passphrase</passphraseVar>
+			</configuration>
 </plugin>
 ```
 
