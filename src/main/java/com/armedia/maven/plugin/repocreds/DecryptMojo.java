@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -183,6 +185,26 @@ public final class DecryptMojo extends AbstractMojo {
 		}
 	}
 
+	private String renderAuthCombo(Server server) {
+		if (server == null) { return null; }
+		String username = server.getUsername();
+		if (username == null) {
+			username = "";
+		}
+		String password = server.getPassword();
+		if (password == null) {
+			password = "";
+		}
+
+		Charset charset = Charset.defaultCharset();
+		String encoding = this.authComboEncoding;
+		if ((encoding == null) || (encoding.trim().length() == 0)) {
+			charset = Charset.forName(encoding);
+		}
+		String auth = String.format("%s:%s", username, password);
+		return Base64.getEncoder().encodeToString(auth.getBytes(charset));
+	}
+
 	/**
 	 * <p>
 	 * This collection just makes it easy to iterate over all fields and do the deed
@@ -216,6 +238,12 @@ public final class DecryptMojo extends AbstractMojo {
 					() -> DecryptMojo.this.privateKeyFile, //
 					() -> DecryptMojo.this.privateKeyVar //
 				));
+				add(new ValueHandler( //
+					"user-pass auth combo", //
+					DecryptMojo.this::renderAuthCombo, //
+					() -> DecryptMojo.this.authComboFile, //
+					() -> DecryptMojo.this.authComboVar //
+				));
 			}
 		});
 
@@ -237,6 +265,9 @@ public final class DecryptMojo extends AbstractMojo {
 	@Parameter(property = DecryptMojo.PROP_PFX + "privateKeyFile", required = false)
 	private File privateKeyFile;
 
+	@Parameter(property = DecryptMojo.PROP_PFX + "authComboFile", required = false)
+	private File authComboFile;
+
 	@Parameter(property = DecryptMojo.PROP_PFX + "usernameVar", required = false)
 	private String usernameVar;
 
@@ -248,6 +279,12 @@ public final class DecryptMojo extends AbstractMojo {
 
 	@Parameter(property = DecryptMojo.PROP_PFX + "privateKeyVar", required = false)
 	private String privateKeyVar;
+
+	@Parameter(property = DecryptMojo.PROP_PFX + "authComboEncoding", required = false)
+	private String authComboEncoding;
+
+	@Parameter(property = DecryptMojo.PROP_PFX + "authComboVar", required = false)
+	private String authComboVar;
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
 	private Settings settings;
