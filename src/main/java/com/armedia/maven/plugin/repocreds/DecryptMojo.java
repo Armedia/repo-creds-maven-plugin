@@ -141,7 +141,8 @@ public final class DecryptMojo extends AbstractMojo {
 			// Not entirely sure this is necessary, but we do it anyway :D
 			DecryptMojo.this.session.getTopLevelProject().getProperties().setProperty(target, value);
 			for (MavenProject project : DecryptMojo.this.session.getProjectDependencyGraph().getSortedProjects()) {
-				getLog().debug("Storing timestamp property in project " + project.getId());
+				getLog().debug(String.format("Storing the %s for server %s into the %s property in project %s",
+					this.fieldName, server.getId(), target, project.getId()));
 				project.getProperties().setProperty(target, value);
 			}
 		}
