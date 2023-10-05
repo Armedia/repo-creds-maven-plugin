@@ -111,13 +111,13 @@ public final class DecryptMojo extends AbstractMojo {
 	 *
 	 * @author diego
 	 */
-	protected class ValueHandler {
+	protected class ValueExporter {
 		private final String fieldName;
 		private final Function<Server, String> getter;
 		private final Supplier<File> file;
 		private final Supplier<String> var;
 
-		private ValueHandler(String fieldName, Function<Server, String> getter, Supplier<File> file,
+		private ValueExporter(String fieldName, Function<Server, String> getter, Supplier<File> file,
 			Supplier<String> var) {
 			this.fieldName = fieldName;
 			this.getter = getter;
@@ -188,29 +188,29 @@ public final class DecryptMojo extends AbstractMojo {
 	 * This collection just makes it easy to iterate over all fields and do the deed
 	 * </p>
 	 */
-	private final Collection<ValueHandler> valueHandlers = Collections
-		.unmodifiableCollection(new LinkedList<ValueHandler>() {
+	private final Collection<ValueExporter> valueExporters = Collections
+		.unmodifiableCollection(new LinkedList<ValueExporter>() {
 			private static final long serialVersionUID = 1L;
 			{
-				add(new ValueHandler( //
+				add(new ValueExporter( //
 					"username", //
 					Server::getUsername, //
 					() -> DecryptMojo.this.usernameFile, //
 					() -> DecryptMojo.this.usernameVar //
 				));
-				add(new ValueHandler( //
+				add(new ValueExporter( //
 					"password", //
 					Server::getPassword, //
 					() -> DecryptMojo.this.passwordFile, //
 					() -> DecryptMojo.this.passwordVar //
 				));
-				add(new ValueHandler( //
+				add(new ValueExporter( //
 					"private key passphrase", //
 					Server::getPassphrase, //
 					() -> DecryptMojo.this.passphraseFile, //
 					() -> DecryptMojo.this.passphraseVar //
 				));
-				add(new ValueHandler( //
+				add(new ValueExporter( //
 					"private key", //
 					Server::getPrivateKey, //
 					() -> DecryptMojo.this.privateKeyFile, //
@@ -355,8 +355,8 @@ public final class DecryptMojo extends AbstractMojo {
 
 		// Get the decrypted server information
 		final Server decrypted = decryptRes.getServer();
-		for (ValueHandler h : this.valueHandlers) {
-			h.export(log, decrypted);
+		for (ValueExporter e : this.valueExporters) {
+			e.export(log, decrypted);
 		}
 	}
 }
