@@ -258,6 +258,78 @@ public final class DecryptMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${session}", required = true, readonly = true)
 	private MavenSession session;
 
+	public boolean isSkip() {
+		return this.skip;
+	}
+
+	public void setSkip(boolean skip) {
+		this.skip = skip;
+	}
+
+	public File getUsernameFile() {
+		return this.usernameFile;
+	}
+
+	public void setUsernameFile(File usernameFile) {
+		this.usernameFile = usernameFile;
+	}
+
+	public File getPasswordFile() {
+		return this.passwordFile;
+	}
+
+	public void setPasswordFile(File passwordFile) {
+		this.passwordFile = passwordFile;
+	}
+
+	public File getPassphraseFile() {
+		return this.passphraseFile;
+	}
+
+	public void setPassphraseFile(File passphraseFile) {
+		this.passphraseFile = passphraseFile;
+	}
+
+	public File getPrivateKeyFile() {
+		return this.privateKeyFile;
+	}
+
+	public void setPrivateKeyFile(File privateKeyFile) {
+		this.privateKeyFile = privateKeyFile;
+	}
+
+	public String getUsernameVar() {
+		return this.usernameVar;
+	}
+
+	public void setUsernameVar(String usernameVar) {
+		this.usernameVar = usernameVar;
+	}
+
+	public String getPasswordVar() {
+		return this.passwordVar;
+	}
+
+	public void setPasswordVar(String passwordVar) {
+		this.passwordVar = passwordVar;
+	}
+
+	public String getPassphraseVar() {
+		return this.passphraseVar;
+	}
+
+	public void setPassphraseVar(String passphraseVar) {
+		this.passphraseVar = passphraseVar;
+	}
+
+	public String getPrivateKeyVar() {
+		return this.privateKeyVar;
+	}
+
+	public void setPrivateKeyVar(String privateKeyVar) {
+		this.privateKeyVar = privateKeyVar;
+	}
+
 	@Override
 	public final void execute() throws MojoExecutionException, MojoFailureException {
 		final Logger log = new Logger();
